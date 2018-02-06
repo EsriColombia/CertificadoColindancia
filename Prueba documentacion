@@ -1,0 +1,72 @@
+Pasos de generación de acta/informe de colindancia
+1.	Abrir el archivo “Preparacion de la información.mxd” y cambiar el data source de cada una de las capas según sea necesario. (Esto debe realizarse cada vez que se cambie de municipio o de base de datos)
+2.	Del Toolbox Colindantes_Propietarios abrir el modelo Adecuacion_Info, establecer los vínculos apropiados y ejecutar el modelo.
+3.	Del Toolbox Colindantes_Propietarios abrir el modelo Propietarios_Colindantes, establecer los vínculos apropiados y ejecutar el modelo.
+4.	Del Toolbox Orden_Nodos:
+a.	Editar el modelo Orden_Nodos para establecer la ruta a la Default.gdb del equipo, este procedimiento solo debe hacerse la primera vez que se va a ejecutar el modelo en un computador nuevo. Este cambio debe hacerse en las siguientes herramientas:
+i.	Polygon To Line
+ii.	Feature Vertices To Points
+iii.	Select
+iv.	Feature Vertices To Points (3)
+v.	Sort
+vi.	Select (2)
+b.	Establecer la ruta adecuada de las siguientes capas dentro del modelo (estas capas no entran por parámetro):
+i.	LinderosJoin(2)
+ii.	Predio Linderos
+c.	Abrir el modelo Prep_orden_nodos, establecer los vínculos apropiados y ejecutar el modelo. (el modelo debe tomar aproximadamente 20s por cada predio que se tenga)
+5.	Editar los scripts: ScriptPropietarios.py (a) y scriptNodosSig.py (b):
+a.	tPropietarios="<workspace>/<Base de datos>.gdb/Propietarios_Generales"
+b.	Tabla="<workspace>/<Base de datos>.gdb/ Nodo_Predio"
+c.	ejecutar los scripts. 
+6.	Del Toolbox ColindanciaLindero abrir el modelo, establecer los vínculos apropiados y ejecutar el modelo.
+7.	Editar los scripts: ScriptDistancias.py:
+a.	tColindantes="<workspace>/<Base de datos>.gdb/Colindantes_Tabla"
+b.	tLinderos="<workspace>/<Base de datos>.gdb/Colindantes_Linderos"
+c.	ejecutar el script. 
+8.	Una vez todos los modelos de las toolboxes se hayan ejecutado, se puede abrir el archivo Acta de Colindancia <nombremunicipio>.mxd y establecer el data source de cada una de las capas como se muestra en las imagenes.
+a.	Note que todas las capas se encuentran en una geodatabase diferente a la que necesita, de modo tal que debe redirigir cada capa a la geodatabase del municipio correspondiente.
+ 
+b.	Haga click derecho en la capa y seleccione Properties>Source>Set Data Source. 
+ 
+c.	Seleccione la geodatabase requerida y en ella la capa que corresponde, en este caso Nodo_Predio. 
+ 
+d.	Dar click en Add>Aceptar
+e.	Note que la capa que acabo de cambiar aparece en una geodatabase diferente. 
+ 
+f.	Debe repetir este procedimiento con todas las capas presentes en el .mxd de la siguiente manera ({Nombre en el .mxd}>{nombre aproximado o esperado en la geodatabase}):
+i.	Nodo_predio> Nodo_predio
+ii.	FORMULARIO_SAN_CARLOS>Topaipi (o nombre de la capa de formulario)
+iii.	Predio Linderos>LINDEROSJ
+iv.	LINDEROSJ> LINDEROSJ
+v.	Colindantes_Nodos> Colindantes_Nodos
+vi.	PREDIO>PREDIOS_RURALES (o nombre de la capa de predios)
+vii.	PREDIOS URBANOS>PREDIOS_RURALES (o nombre de la capa de predios)
+viii.	Titulares_Derechos_N>Titulares_Derechos_N
+ix.	Titulares_Personas_Juridicas>Titulares_Personas_Juridicas
+x.	Propietarios_Generales>Propietarios_Generales
+xi.	Colindantes_Tabla>Colindantes_Tabla
+9.	Editar el script: scriptColindantes.py:
+a.	tColindantes="<workspace>/<Base de datos>.gdb/Colindantes_Tabla"
+b.	tNodos="<workspace>/<Base de datos>.gdb/Colindantes_Nodos"
+c.	ejecutar el script. 
+10.	Cargar el reporte Reporte completo6.rlf desde la pestaña View>Reports>Load Report. Establecer las relaciones en la ventana emergente (Ver Imagen) y guardar (se debe hacer cada vez que se cambia de municipio). 
+a.	La primera vez que se llama un reporte saldrá este error: 
+ 
+Hacer click en “Si”
+b.	Luego, emergerá esta ventana: 
+ 
+c.	En la lista desplegable superior se debe establecer la capa sobre la cual esta establecido el reporte, esta capa es PREDIO. Observe que una vez realizada esta conexión observe que muchos de los campos en los que aparecia [Remove Field] ahora aparece el nombre del campo requerido. 
+ 
+d.	Ahora se deben establecer las relaciones. Para esto se hace click en la flecha al lado izquierdo de Related Report:  
+Al desplegar la lista vera que aun no esta establecida la relación y por lo tanto los campos están vacios. Al desplegar la lista en la Fila Relationship, seleccionar la que corresponda en nombre con la de la sección.
+ 
+Este procedimiento debe repetirse con cada una de las relaciones.
+e.	Una vez establecidas las conexiones se abre el editor.  
+En el editor se debe asegurar que las conexiones de las relaciones están apropiadamente establecidas.
+f.	Establecer la ruta de la imagen.  
+Esta imagen es el mxd, mas adelante se empleará en el paso 10, donde se exportan los reportes, de modo tal que debe ser la misma del paso 10b.
+g.	Guardar el reporte.
+11.	Editar el script export_driven_pages_to_AI.py:
+a.	input_mxd = r"<workspace>\Acta de colindancia <municipio>.mxd"
+b.	output_folder = r"<workspace>\Reportes"
+c.	arcpy.mapping.ExportReport(lyr, r"<workspace>\Reporte completo6.rlf", r"<workspace>\Reportes\Acta" + str(page_name) +" <municipio>"+ ".pdf")
